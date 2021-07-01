@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig } from 'axios';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
 import packageData from '../package.json';
 import {
@@ -20,13 +20,20 @@ const PRIMETRUST_API_VERSION = 'v2';
 const USERS_API_ENDPOINT = '/users';
 const ACCOUNTS_API_ENDPOINT = '/accounts';
 
-const HTTP_GET_METHOD = 'get';
+const USER_ENTITY_TYPE = 'user';
+
 const HTTP_POST_METHOD = 'post';
 
 export class PrimeTrustAPIClient {
   public name: string;
   public version: string;
   public rootURL: string;
+  private token: string;
+  private options: {
+    username: string;
+    password: string;
+    sandbox: boolean;
+  };
 
   constructor(options: {
     username: string;
@@ -38,74 +45,101 @@ export class PrimeTrustAPIClient {
     this.rootURL = options.sandbox
       ? PRIMETRUST_SANDBOX_API_URL
       : PRIMETRUST_API_URL;
+    this.options = options;
   }
 
-  private async request(
-    url: string,
-    method: string,
-    data: { [key: string]: any } = {},
-    headers: { [key: string]: string } = {},
-  ): Promise<any> {
-    const baseURL = `${this.rootURL}/${PRIMETRUST_API_VERSION}`;
+  private async request(config: AxiosRequestConfig): Promise<any> {
+    try {
+      this.token = this.token
+        ? this.token
+        : await this.getJWT(this.options.username, this.options.password);
+      config.headers = { Authorization: `Bearer ${this.token}` };
+      config.baseURL = `${this.rootURL}/${PRIMETRUST_API_VERSION}`;
+      const response = await axios(config);
 
-    return axios({
-      method,
-      baseURL,
-      url,
-      data,
-    } as AxiosRequestConfig);
+      return response.data;
+    } catch (error) {
+      console.log(JSON.stringify(error.response.data));
+      // if (axios.isAxiosError(error)) {
+      //   handleAxiosError(error);
+      // } else {
+      //   handleUnexpectedError(error);
+      // }
+    }
   }
 
-  public async CreateUser(data: {
-    email: string;
-    name: string;
-    password: string;
-  }): Promise<ICreateUserResponse> {
-    const endpoint = USERS_API_ENDPOINT;
+  private async getJWT(username, password) {
+    const url = `/auth/jwts`;
+    const method = HTTP_POST_METHOD;
+    const auth = {
+      username,
+      password,
+    };
+    const baseURL = `${this.rootURL}`;
+    const response = await axios({ url, method, auth, baseURL });
 
-    return this.request(endpoint, HTTP_POST_METHOD, data);
+    return response.data.token;
+  }
+
+  public async CreateUser(
+    email: string,
+    name: string,
+    password: string,
+  ): Promise<ICreateUserResponse> {
+    const url = USERS_API_ENDPOINT;
+    const method = HTTP_POST_METHOD;
+    const data = {
+      data: {
+        type: USER_ENTITY_TYPE,
+        attributes: { email, name, password },
+      },
+    };
+
+    return this.request({ url, method, data });
   }
 
   public async GetUsers(): Promise<IGetUsersResponse> {
-    const endpoint = USERS_API_ENDPOINT;
+    const url = USERS_API_ENDPOINT;
 
-    return this.request(endpoint, HTTP_GET_METHOD);
+    return this.request({ url });
   }
 
   public async GetCurrentUser(): Promise<IGetCurrentUserResponse> {
-    const endpoint = `${USERS_API_ENDPOINT}/current`;
+    const url = `${USERS_API_ENDPOINT}/current`;
 
-    return this.request(endpoint, HTTP_GET_METHOD);
+    return this.request({ url });
   }
 
   public async CreateAccount(
     account: ICreateAccountInterface,
   ): Promise<ICreateAccountResponse> {
-    const endpoint = ACCOUNTS_API_ENDPOINT;
+    const url = ACCOUNTS_API_ENDPOINT;
+    const method = HTTP_POST_METHOD;
+    const data = account;
 
-    return this.request(endpoint, HTTP_POST_METHOD, account);
+    return this.request({ url, method, data });
   }
 
   public async GetAccounts(): Promise<IGetAccountsResponse> {
-    const endpoint = ACCOUNTS_API_ENDPOINT;
+    const url = ACCOUNTS_API_ENDPOINT;
 
-    return this.request(endpoint, HTTP_GET_METHOD);
+    return this.request({ url });
   }
 
   public async GetAccountFiatBalance(data: {
     account: string;
   }): Promise<IGetAccountFiatBalanceResponse> {
-    const endpoint = `/account-cash-totals?account.id=${data.account}`;
+    const url = `/account-cash-totals?account.id=${data.account}`;
 
-    return this.request(endpoint, HTTP_GET_METHOD);
+    return this.request({ url });
   }
 
   public async GetAccountCryptoBalance(data: {
     account: string;
   }): Promise<IGetAccountCryptoBalanceResponse> {
-    const endpoint = `/account-asset-totals?account.id=${data.account}`;
+    const url = `/account-asset-totals?account.id=${data.account}`;
 
-    return this.request(endpoint, HTTP_GET_METHOD);
+    return this.request({ url });
   }
 
   public async UploadDocument(document: {
@@ -114,8 +148,10 @@ export class PrimeTrustAPIClient {
     description: string;
     fileData: string;
   }): Promise<IUploadDocumentResponse> {
-    const endpoint = `/uploaded-documents`;
+    const url = `/uploaded-documents`;
+    const method = HTTP_POST_METHOD;
+    const data = document;
 
-    return this.request(endpoint, HTTP_POST_METHOD, document);
+    return this.request({ url, method, data });
   }
 }

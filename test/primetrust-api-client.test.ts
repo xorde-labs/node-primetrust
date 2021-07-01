@@ -2,6 +2,7 @@ import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 import dotenv from 'dotenv';
 import chaiAsPromised from 'chai-as-promised';
+import faker from 'faker';
 
 import { PrimeTrustAPIClient } from '../src/primetrust-api-client';
 import pkg from '../package.json';
@@ -19,8 +20,8 @@ describe('PrimeTrustAPIClient', () => {
 
   beforeEach(() => {
     options = {
-      username: '',
-      password: '',
+      username: 'asd@asd.com',
+      password: 'Password123',
       sandbox: true,
     };
 
@@ -33,10 +34,16 @@ describe('PrimeTrustAPIClient', () => {
     expect(client.version).equal(pkg.version);
   });
 
-  describe('Create User', async () => {
-    const response = await client.CreateUser();
-    expect(response.id).be.a('string');
-  });
+  it('Create User', async () => {
+    const email = faker.internet.email();
+    const response = await client.CreateUser(
+      email,
+      faker.name.firstName(),
+      'Asdaasd123',
+    );
+    expect(response.data.id).be.a('string');
+    expect(response.data.attributes.email).equal(email);
+  }).timeout(5000);
 
   xdescribe('Get Users', async () => {
     const response = await client.GetUsers();
