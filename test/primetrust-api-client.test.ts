@@ -38,37 +38,37 @@ describe('PrimeTrustAPIClient', () => {
     expect(response.id).be.a('string');
   });
 
-  describe('Get Users', async () => {
+  xdescribe('Get Users', async () => {
     const response = await client.GetUsers();
     expect(response.id).be.a('string');
   });
 
-  describe('Get Current User', async () => {
+  xdescribe('Get Current User', async () => {
     const response = await client.GetCurrentUser();
     expect(response.id).be.a('string');
   });
 
-  describe('Create Accounts', async () => {
+  xdescribe('Create Accounts', async () => {
     const response = await client.CreateAccount();
     expect(response.id).be.a('string');
   });
 
-  describe('Get Accounts', async () => {
+  xdescribe('Get Accounts', async () => {
     const response = await client.GetAccounts();
     expect(response.id).be.a('string');
   });
 
-  describe('Get GetAccountFiatBalance', async () => {
+  xdescribe('Get GetAccountFiatBalance', async () => {
     const response = await client.GetAccountFiatBalance();
     expect(response.id).be.a('string');
   });
 
-  describe('Get GetAccountCryptoBalance', async () => {
+  xdescribe('Get GetAccountCryptoBalance', async () => {
     const response = await client.GetAccountCryptoBalance();
     expect(response.id).be.a('string');
   });
 
-  describe('UploadDocument', async () => {
+  xdescribe('UploadDocument', async () => {
     const response = await client.UploadDocument();
     expect(response.id).be.a('string');
   });

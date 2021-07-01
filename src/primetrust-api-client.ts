@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 
 import packageData from '../package.json';
 import {
@@ -10,11 +10,18 @@ import {
   IGetAccountFiatBalanceResponse,
   IUploadDocumentResponse,
   IGetAccountsResponse,
+  ICreateAccountInterface,
 } from './interfaces';
 
-export const PRIMETRUST_SANDBOX_API_URL = 'https://sandbox.primetrust.com';
-export const PRIMETRUST_API_URL = 'https://api.primetrust.com';
-export const PRIMETRUST_API_VERSION = 'v2';
+const PRIMETRUST_SANDBOX_API_URL = 'https://sandbox.primetrust.com';
+const PRIMETRUST_API_URL = 'https://api.primetrust.com';
+const PRIMETRUST_API_VERSION = 'v2';
+
+const USERS_API_ENDPOINT = '/users';
+const ACCOUNTS_API_ENDPOINT = '/accounts';
+
+const HTTP_GET_METHOD = 'get';
+const HTTP_POST_METHOD = 'post';
 
 export class PrimeTrustAPIClient {
   public name: string;
@@ -31,7 +38,22 @@ export class PrimeTrustAPIClient {
     this.rootURL = options.sandbox
       ? PRIMETRUST_SANDBOX_API_URL
       : PRIMETRUST_API_URL;
-    //this.client = connect(username, password, sandbox);
+  }
+
+  private async request(
+    url: string,
+    method: string,
+    data: { [key: string]: any } = {},
+    headers: { [key: string]: string } = {},
+  ): Promise<any> {
+    const baseURL = `${this.rootURL}/${PRIMETRUST_API_VERSION}`;
+
+    return axios({
+      method,
+      baseURL,
+      url,
+      data,
+    } as AxiosRequestConfig);
   }
 
   public async CreateUser(data: {
@@ -39,88 +61,61 @@ export class PrimeTrustAPIClient {
     name: string;
     password: string;
   }): Promise<ICreateUserResponse> {
-    const url = new URL(`/${this.version}/users`, this.rootURL);
+    const endpoint = USERS_API_ENDPOINT;
 
-    return axios({
-      method: 'post',
-      url: url.toString(),
-      data,
-    });
+    return this.request(endpoint, HTTP_POST_METHOD, data);
   }
 
   public async GetUsers(): Promise<IGetUsersResponse> {
-    const url = new URL(`/${this.version}/users`, this.rootURL);
+    const endpoint = USERS_API_ENDPOINT;
 
-    return axios({
-      method: 'get',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_GET_METHOD);
   }
 
   public async GetCurrentUser(): Promise<IGetCurrentUserResponse> {
-    const url = new URL(`/${this.version}/users/current`, this.rootURL);
+    const endpoint = `${USERS_API_ENDPOINT}/current`;
 
-    return axios({
-      method: 'get',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_GET_METHOD);
   }
 
-  public async CreateAccount(account: any): Promise<ICreateAccountResponse> {
-    const url = new URL(`/${this.version}/accounts`, this.rootURL);
+  public async CreateAccount(
+    account: ICreateAccountInterface,
+  ): Promise<ICreateAccountResponse> {
+    const endpoint = ACCOUNTS_API_ENDPOINT;
 
-    return axios({
-      method: 'post',
-      url: url.toString(),
-      data: account,
-    });
+    return this.request(endpoint, HTTP_POST_METHOD, account);
   }
 
   public async GetAccounts(): Promise<IGetAccountsResponse> {
-    const url = new URL(`/${this.version}/accounts`, this.rootURL);
+    const endpoint = ACCOUNTS_API_ENDPOINT;
 
-    return axios({
-      method: 'get',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_GET_METHOD);
   }
 
   public async GetAccountFiatBalance(data: {
     account: string;
   }): Promise<IGetAccountFiatBalanceResponse> {
-    // GET v2/account-cash-totals?account.id=<accountId>
-    const url = new URL(`/${this.version}/accounts`, this.rootURL);
+    const endpoint = `/account-cash-totals?account.id=${data.account}`;
 
-    return axios({
-      method: 'get',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_GET_METHOD);
   }
 
   public async GetAccountCryptoBalance(data: {
     account: string;
   }): Promise<IGetAccountCryptoBalanceResponse> {
-    // GET /v2/account-asset-totals?account.id=<accountId>
-    const url = new URL(`/${this.version}/accounts`, this.rootURL);
+    const endpoint = `/account-asset-totals?account.id=${data.account}`;
 
-    return axios({
-      method: 'get',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_GET_METHOD);
   }
 
   public async UploadDocument(document: {
-    // POST v2/uploaded-documents
     contactId: string;
     label: string;
     description: string;
     fileData: string;
   }): Promise<IUploadDocumentResponse> {
-    const url = new URL(`/${this.version}/accounts`, this.rootURL);
+    const endpoint = `/uploaded-documents`;
 
-    return axios({
-      method: 'post',
-      url: url.toString(),
-    });
+    return this.request(endpoint, HTTP_POST_METHOD, document);
   }
 }
