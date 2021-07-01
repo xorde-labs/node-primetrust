@@ -59,16 +59,12 @@ export class PrimeTrustAPIClient {
 
       return response.data;
     } catch (error) {
-      console.log(JSON.stringify(error.response.data));
-      // if (axios.isAxiosError(error)) {
-      //   handleAxiosError(error);
-      // } else {
-      //   handleUnexpectedError(error);
-      // }
+      // eslint-disable-next-line no-console
+      console.error(JSON.stringify(error.response.data));
     }
   }
 
-  private async getJWT(username, password) {
+  private async getJWT(username: string, password: string) {
     const url = `/auth/jwts`;
     const method = HTTP_POST_METHOD;
     const auth = {
