@@ -2,10 +2,12 @@ import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 import dotenv from 'dotenv';
 import chaiAsPromised from 'chai-as-promised';
-import faker from 'faker';
 
 import { PrimeTrustAPIClient } from '../src/primetrust-api-client';
 import pkg from '../package.json';
+
+import { IUser, IAccount } from '../src/interfaces';
+import { generateUser, generateAccount } from './helper';
 
 const expect = chai.expect;
 chai.should();
@@ -34,49 +36,86 @@ describe('PrimeTrustAPIClient', () => {
     expect(client.version).equal(pkg.version);
   });
 
-  it('Create User', async () => {
-    const email = faker.internet.email();
-    const response = await client.CreateUser(
-      email,
-      faker.name.firstName(),
-      'Asdaasd123',
-    );
-    expect(response.data.id).be.a('string');
-    expect(response.data.attributes.email).equal(email);
-  }).timeout(5000);
+  describe('Create User', () => {
+    let user: IUser;
+    beforeEach(() => {
+      user = generateUser();
+    });
 
-  xdescribe('Get Users', async () => {
-    const response = await client.GetUsers();
-    expect(response.id).be.a('string');
+    it('Should create user with valid data', async () => {
+      const response = await client.CreateUser(
+        user.email,
+        user.name,
+        user.password,
+      );
+      expect(response.data.id).be.a('string');
+      expect(response.data.attributes.email).equal(user.email);
+    });
+
+    it('Should return error with invalid password', async () => {
+      const response = await client.CreateUser(user.email, user.name, '123');
+      expect(response.errors).be.a('array');
+      expect(response.errors[0].status).equal(422);
+      expect(response.errors[0].title).equal('Invalid Attribute');
+    });
   });
 
-  xdescribe('Get Current User', async () => {
-    const response = await client.GetCurrentUser();
-    expect(response.id).be.a('string');
+  describe('Get Users', () => {
+    it('Should return list of users', async () => {
+      const response = await client.GetUsers();
+      expect(response.data[0].id).be.a('string');
+      expect(response.data[0].attributes.email).be.a('string');
+    });
   });
 
-  xdescribe('Create Accounts', async () => {
-    const response = await client.CreateAccount();
-    expect(response.id).be.a('string');
+  describe('Get Current User', () => {
+    it('Should return current user info', async () => {
+      const response = await client.GetCurrentUser();
+      expect(response.data.id).be.a('string');
+      expect(response.data.attributes.email).be.a('string');
+      expect(response.data.attributes.email).equal(options.username);
+    });
+  });
+
+  describe('Create Accounts', () => {
+    let account: IAccount;
+    beforeEach(() => {
+      account = generateAccount();
+    });
+
+    it('Should create account', async () => {
+      const response = await client.CreateAccount(account);
+      expect(response.data.id).be.a('string');
+      expect(response.data.attributes.name).be.a('string');
+      expect(response.data.attributes.number).be.a('string');
+    });
+
+    it('Should return error with invalid password', async () => {
+      account.name = '';
+      const response = await client.CreateAccount(account);
+      expect(response.errors).be.a('array');
+      expect(response.errors[0].status).equal(422);
+      expect(response.errors[0].title).equal('Invalid Attribute');
+    });
   });
 
   xdescribe('Get Accounts', async () => {
     const response = await client.GetAccounts();
-    expect(response.id).be.a('string');
+    expect(response.data.id).be.a('string');
   });
 
   xdescribe('Get GetAccountFiatBalance', async () => {
     const response = await client.GetAccountFiatBalance();
-    expect(response.id).be.a('string');
+    expect(response.data.id).be.a('string');
   });
 
   xdescribe('Get GetAccountCryptoBalance', async () => {
     const response = await client.GetAccountCryptoBalance();
-    expect(response.id).be.a('string');
+    expect(response.data.id).be.a('string');
   });
 
   xdescribe('UploadDocument', async () => {
     const response = await client.UploadDocument();
-    expect(response.id).be.a('string');
+    expect(response.data.id).be.a('string');
   });
 });

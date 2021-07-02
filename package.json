@@ -10,7 +10,7 @@
     "eslint": "eslint \"{src,test}/**/*.ts\" --fix",
     "remark": "remark .",
     "lint": "npm run eslint && npm run remark",
-    "test": "mocha -r ts-node/register 'test/**/*.ts'",
+    "test": "mocha -r ts-node/register 'test/**/*.ts' --timeout 5000",
     "test:travis": "npm install && npm test",
     "coverage": "nyc --reporter=html --reporter=text mocha",
     "coveralls": "nyc report --reporter=text-lcov | coveralls"

@@ -10,7 +10,7 @@ import {
   IGetAccountFiatBalanceResponse,
   IUploadDocumentResponse,
   IGetAccountsResponse,
-  ICreateAccountInterface,
+  IAccount,
 } from './interfaces';
 
 const PRIMETRUST_SANDBOX_API_URL = 'https://sandbox.primetrust.com';
@@ -21,6 +21,7 @@ const USERS_API_ENDPOINT = '/users';
 const ACCOUNTS_API_ENDPOINT = '/accounts';
 
 const USER_ENTITY_TYPE = 'user';
+const ACCOUNT_ENTITY_TYPE = 'account';
 
 const HTTP_POST_METHOD = 'post';
 
@@ -61,6 +62,8 @@ export class PrimeTrustAPIClient {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(JSON.stringify(error.response.data));
+
+      return error.response.data;
     }
   }
 
@@ -107,11 +110,16 @@ export class PrimeTrustAPIClient {
   }
 
   public async CreateAccount(
-    account: ICreateAccountInterface,
+    account: IAccount,
   ): Promise<ICreateAccountResponse> {
+    const data = {
+      data: {
+        type: ACCOUNT_ENTITY_TYPE,
+        attributes: account,
+      },
+    };
     const url = ACCOUNTS_API_ENDPOINT;
     const method = HTTP_POST_METHOD;
-    const data = account;
 
     return this.request({ url, method, data });
   }
