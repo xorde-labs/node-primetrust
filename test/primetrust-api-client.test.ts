@@ -90,7 +90,7 @@ describe('PrimeTrustAPIClient', () => {
       expect(response.data.attributes.number).be.a('string');
     });
 
-    it('Should return error with invalid password', async () => {
+    it('Should return error with empty name', async () => {
       account.name = '';
       const response = await client.CreateAccount(account);
       expect(response.errors).be.a('array');
