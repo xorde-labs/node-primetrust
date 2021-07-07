@@ -2,11 +2,12 @@ import chai from 'chai';
 import dirtyChai from 'dirty-chai';
 import dotenv from 'dotenv';
 import chaiAsPromised from 'chai-as-promised';
+import fs from 'fs';
 
 import { PrimeTrustAPIClient } from '../src/primetrust-api-client';
 import pkg from '../package.json';
 
-import { IUser, IAccount } from '../src/interfaces';
+import { IUser, IAccount, ICreateAccountResponse } from '../src/interfaces';
 import { generateUser, generateAccount } from './helper';
 
 const expect = chai.expect;
@@ -99,23 +100,67 @@ describe('PrimeTrustAPIClient', () => {
     });
   });
 
-  xdescribe('Get Accounts', async () => {
-    const response = await client.GetAccounts();
-    expect(response.data.id).be.a('string');
+  describe('Get Accounts', () => {
+    it('Should return list of accounts', async () => {
+      const response = await client.GetAccounts();
+      expect(response.links).be.exist();
+      expect(response.meta).be.exist();
+      expect(response.data).be.a('array');
+      expect(response.data[0].id).be.a('string');
+    });
   });
 
-  xdescribe('Get GetAccountFiatBalance', async () => {
-    const response = await client.GetAccountFiatBalance();
-    expect(response.data.id).be.a('string');
+  describe('Get GetAccountFiatBalance', () => {
+    let accountData: IAccount;
+    let account: ICreateAccountResponse;
+    beforeEach(async () => {
+      accountData = generateAccount();
+      account = await client.CreateAccount(accountData);
+    });
+
+    it('Should return fiat balance', async () => {
+      const id = account.data.id;
+      const response = await client.GetAccountFiatBalance(id);
+      expect(response.data[0].id).be.a('string');
+      expect(response.data[0].attributes.settled).be.a('number');
+      expect(response.data[0].attributes.disbursable).be.a('number');
+    });
   });
 
-  xdescribe('Get GetAccountCryptoBalance', async () => {
-    const response = await client.GetAccountCryptoBalance();
-    expect(response.data.id).be.a('string');
+  describe('Get GetAccountCryptoBalance', () => {
+    let accountData: IAccount;
+    let account: ICreateAccountResponse;
+    beforeEach(async () => {
+      accountData = generateAccount();
+      account = await client.CreateAccount(accountData);
+    });
+
+    it('Should return crypto balance', async () => {
+      const id = account.data.id;
+      const response = await client.GetAccountCryptoBalance(id);
+      expect(response.data).be.a('array');
+    });
   });
 
-  xdescribe('UploadDocument', async () => {
-    const response = await client.UploadDocument();
-    expect(response.data.id).be.a('string');
+  describe('UploadDocument', async () => {
+    let accountData: IAccount;
+    let account: ICreateAccountResponse;
+    let contact: any;
+    beforeEach(async () => {
+      accountData = generateAccount();
+      account = await client.CreateAccount(accountData);
+      contact = await client.GetAccountContacts(account.data.id);
+    });
+
+    it('Should upload document', async () => {
+      const response = await client.UploadDocument({
+        label: 'Example Document',
+        description: 'Example Document',
+        contactId: contact.data[0].id,
+        fileData: fs.createReadStream('./test/fixtures/test.txt'),
+      });
+      expect(response.data.id).be.a('string');
+      expect(response.data.attributes['file-url']).be.a('string');
+    });
   });
 });

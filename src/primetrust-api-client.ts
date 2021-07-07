@@ -1,4 +1,5 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import FormData from 'form-data';
 
 import packageData from '../package.json';
 import {
@@ -54,7 +55,11 @@ export class PrimeTrustAPIClient {
       this.token = this.token
         ? this.token
         : await this.getJWT(this.options.username, this.options.password);
-      config.headers = { Authorization: `Bearer ${this.token}` };
+      config.headers = {
+        Authorization: `Bearer ${this.token}`,
+        ...config.headers,
+      };
+
       config.baseURL = `${this.rootURL}/${PRIMETRUST_API_VERSION}`;
       const response = await axios(config);
 
@@ -130,18 +135,24 @@ export class PrimeTrustAPIClient {
     return this.request({ url });
   }
 
-  public async GetAccountFiatBalance(data: {
-    account: string;
-  }): Promise<IGetAccountFiatBalanceResponse> {
-    const url = `/account-cash-totals?account.id=${data.account}`;
+  public async GetAccountFiatBalance(
+    id: string,
+  ): Promise<IGetAccountFiatBalanceResponse> {
+    const url = `/account-cash-totals?account.id=${id}`;
 
     return this.request({ url });
   }
 
-  public async GetAccountCryptoBalance(data: {
-    account: string;
-  }): Promise<IGetAccountCryptoBalanceResponse> {
-    const url = `/account-asset-totals?account.id=${data.account}`;
+  public async GetAccountCryptoBalance(
+    id: string,
+  ): Promise<IGetAccountCryptoBalanceResponse> {
+    const url = `/account-asset-totals?account.id=${id}`;
+
+    return this.request({ url });
+  }
+
+  public async GetAccountContacts(id: string): Promise<any> {
+    const url = `/contacts?account.id=${id}`;
 
     return this.request({ url });
   }
@@ -154,8 +165,38 @@ export class PrimeTrustAPIClient {
   }): Promise<IUploadDocumentResponse> {
     const url = `/uploaded-documents`;
     const method = HTTP_POST_METHOD;
-    const data = document;
+    const form = new FormData();
+    form.append('label', document.label);
+    form.append('description', document.description);
+    form.append('contact-id', document.contactId);
+    form.append('file', document.fileData);
 
-    return this.request({ url, method, data });
+    const data = {
+      data: {
+        attributes: {
+          file: document.fileData,
+          'contact-id': document.contactId,
+          description: document.description,
+          label: document.label,
+        },
+      },
+    };
+
+    try {
+      const result = await axios.post(
+        `${this.rootURL}/${PRIMETRUST_API_VERSION}${url}`,
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+            ...form.getHeaders(),
+          },
+        },
+      );
+
+      return result.data as any;
+    } catch (err) {
+      return err;
+    }
   }
 }
