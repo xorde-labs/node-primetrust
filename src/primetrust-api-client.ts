@@ -65,6 +65,9 @@ export class PrimeTrustAPIClient {
 
       return response.data;
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(JSON.stringify(error.response.data));
+
       return error.response.data;
     }
   }
@@ -181,8 +184,11 @@ export class PrimeTrustAPIClient {
       );
 
       return result.data as any;
-    } catch (err) {
-      return err;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(JSON.stringify(error.response.data));
+
+      return error.response.data;
     }
   }
 }

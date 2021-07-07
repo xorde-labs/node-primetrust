@@ -9,7 +9,7 @@ export function generateUser(): IUser {
   return {
     name: faker.name.firstName(),
     email: faker.internet.email(),
-    password: faker.internet.password(8, false, /^[a-zA-Z0-9]*$/, 'aA'),
+    password: faker.internet.password(10, false, /^[a-zA-Z0-9]*$/, 'aA1'),
   };
 }
 
