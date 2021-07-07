@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "es2019",
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "outDir": "./lib"
+  },
+  "include": [
+      "./src/**/*",
+      "./test/**/*"
+  ]
+}
