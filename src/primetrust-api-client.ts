@@ -65,9 +65,6 @@ export class PrimeTrustAPIClient {
 
       return response.data;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(JSON.stringify(error.response.data));
-
       return error.response.data;
     }
   }
@@ -170,17 +167,6 @@ export class PrimeTrustAPIClient {
     form.append('description', document.description);
     form.append('contact-id', document.contactId);
     form.append('file', document.fileData);
-
-    const data = {
-      data: {
-        attributes: {
-          file: document.fileData,
-          'contact-id': document.contactId,
-          description: document.description,
-          label: document.label,
-        },
-      },
-    };
 
     try {
       const result = await axios.post(
