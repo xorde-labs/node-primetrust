@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import FormData from 'form-data';
 
 import packageData from '../package.json';
@@ -163,8 +163,6 @@ export class PrimeTrustAPIClient {
     description: string;
     fileData: string;
   }): Promise<IUploadDocumentResponse> {
-    const url = `/uploaded-documents`;
-    const method = HTTP_POST_METHOD;
     const form = new FormData();
     form.append('label', document.label);
     form.append('description', document.description);
@@ -173,7 +171,7 @@ export class PrimeTrustAPIClient {
 
     try {
       const result = await axios.post(
-        `${this.rootURL}/${PRIMETRUST_API_VERSION}${url}`,
+        `${this.rootURL}/${PRIMETRUST_API_VERSION}/uploaded-documents`,
         form,
         {
           headers: {
