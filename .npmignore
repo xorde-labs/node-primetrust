@@ -1,0 +1,14 @@
+test/
+lib/test/
+docs/
+
+.commitlintrc.json
+.editorconfig
+.eslintrc.json
+.eslintignore
+.prettierignore
+.prettierignore_docs
+
+tsconfig.json
+src/
+index.ts
